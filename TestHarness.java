@@ -19,6 +19,8 @@ public class TestHarness {
 	
 	private Set<Contact> contacts;
 	private List<Meeting> meetings;
+	private int latestMeetingId;
+	private int latestCustomerId;
 	private static final String FILENAME = "contacts.txt";
 	
 	public void launch() {
@@ -34,6 +36,8 @@ public class TestHarness {
 		if (!new File(FILENAME).exists()) {
             contacts = new HashSet<Contact>();
             meetings = new ArrayList<Meeting>();
+			latestMeetingId=1;
+			latestCustomerId=1;
         } else {
 			ObjectInputStream d = null;			
             try { 
@@ -42,7 +46,10 @@ public class TestHarness {
                             new FileInputStream(FILENAME)));
                 contacts = (Set<Contact>) d.readObject();
                 meetings = (List<Meeting>) d.readObject();
-				d.close(); // remove if a problem
+				LatestIDs storedIds = (LatestIDs) d.readObject();
+				this.latestMeetingId=storedIds.latestMeetingId++;
+				this.latestCustomerId=storedIds.latestCustomerId++;
+				d.close(); 
             } catch (IOException | ClassNotFoundException ex) {
                 System.err.println("On read error " + ex);
             } finally {
@@ -73,6 +80,9 @@ public class TestHarness {
 	
 	public void flush() {
 		ObjectOutputStream encode = null;
+		LatestIDs storedIds = new LatestIDs();
+		storedIds.latestMeetingId=this.latestMeetingId;
+		storedIds.latestCustomerId=this.latestCustomerId;
 		try {
 				encode = new ObjectOutputStream(
 					new BufferedOutputStream(
@@ -86,6 +96,7 @@ public class TestHarness {
         try {
             encode.writeObject(contacts);
             encode.writeObject(meetings);
+			encode.writeObject(storedIds);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -99,7 +110,8 @@ public class TestHarness {
 	
 	public void createMeetings() {
 		Calendar myCalendar = Calendar.getInstance();
-		Meeting myMeeting = new MeetingImpl(myCalendar, contacts);
+		Meeting myMeeting = new MeetingImpl(myCalendar, this.latestMeetingId, contacts);
+		this.latestMeetingId++;
 		
 		System.out.println(myMeeting.getId() + ":" + DateUtilities.formatDate(myMeeting.getDate()) );
 		meetings.add(myMeeting);
@@ -109,38 +121,35 @@ public class TestHarness {
 		//contacts = new HashSet<Contact>();
 		
 		try {
-			Contact newContact = new ContactImpl("Phil");
-			newContact.addNotes("saw Phil today");
-			newContact.addNotes("saw Phil again");
-			newContact.addNotes("bored of seeing phil already");
+			Contact newContact = new ContactImpl("Phil", this.latestCustomerId);
 			contacts.add(newContact);
+			this.latestCustomerId++;
 			//System.out.println(newContact.getId() + newContact.getName() + newContact.getNotes());
 		} catch (IllegalArgumentException ex) {
 			System.out.println(ex.getMessage());
 		}
 		
 		try {
-			Contact newContact1 = new ContactImpl("Phil**&oura");
+			Contact newContact1 = new ContactImpl("Phil**&oura",this.latestCustomerId);
 			contacts.add(newContact1);
+			this.latestCustomerId++;
 			//System.out.println(newContact.getId() + newContact.getName() + newContact.getNotes());
 		} catch (IllegalArgumentException ex) {
 			System.out.println(ex.getMessage());
 		}
 		
 		try {
-			Contact newContact2 = new ContactImpl("Isabelle","new client, treat nicely");
-			newContact2.addNotes("saw Issy today");
-			newContact2.addNotes("saw Issy again");
-			newContact2.addNotes("bored of seeing Issy already");
+			Contact newContact2 = new ContactImpl("Isabelle",this.latestCustomerId);
 			contacts.add(newContact2);
+			this.latestCustomerId++;
 		} catch (IllegalArgumentException ex) {
 			System.out.println(ex.getMessage());
 		}
 				
 		try {
-			Contact newContact3 = new ContactImpl("Aimee","young pup");
-			newContact3.addNotes("saw Aimee again today");
+			Contact newContact3 = new ContactImpl("Aimee",this.latestCustomerId);
 			contacts.add(newContact3);
+			this.latestCustomerId++;
 		} catch (IllegalArgumentException ex) {
 			System.out.println(ex.getMessage());
 		}

@@ -6,12 +6,11 @@ import java.io.Serializable;
 
 public class ContactImpl implements Contact, Serializable {
  
-	private static int contactIDseed=0;
 	private int id;
 	private String name;
 	private String notes;
 	
-	public ContactImpl(String name) throws IllegalArgumentException {
+	public ContactImpl(String name, int id) throws IllegalArgumentException {
 		
 		try {
 			checkText(name);
@@ -20,11 +19,11 @@ public class ContactImpl implements Contact, Serializable {
 		}
 		this.name=name; 
 		notes="";
-		id=++contactIDseed;
+		this.id=id;
 	}
 	
-	public ContactImpl(String name, String notes) {
-		this(name);
+	public ContactImpl(String name, int id, String notes) {
+		this(name, id);
 		addNotes(notes);
 	}
 	
