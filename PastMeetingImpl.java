@@ -1,6 +1,6 @@
 public class PastMeetingImpl implements PastMeeting {
 	
-	@override
+	@Override
 	public String getNotes() {
 	}
 }
