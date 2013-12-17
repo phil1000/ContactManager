@@ -28,8 +28,15 @@ public class TestHarness {
 		createContacts();
 		createMeetings();
 		flush();
-		print();
+		printMeetings();
 		
+		/*Calendar c1 = Calendar.getInstance();
+		c1.set(2000, Calendar.JANUARY, 30);  //January 30th 2000
+		System.out.println(c1.getTime() + ":" + DateUtilities.dateInPast(c1));
+		c1.set(2014, Calendar.JANUARY, 30);  //January 30th 2000
+		System.out.println(c1.getTime() + ":" + DateUtilities.dateInPast(c1));
+		c1.set(2013, Calendar.DECEMBER, 16);  //January 30th 2000
+		System.out.println(c1.getTime() + ":" + DateUtilities.dateInPast(c1));*/
 	}
 	
 	public void openfile() {
@@ -78,6 +85,19 @@ public class TestHarness {
 		}		
 	}
 	
+	public void printMeetings() {
+		Iterator<Meeting> iter = meetings.iterator();
+		while (iter.hasNext()) {
+			Meeting thisMeeting=iter.next();
+			System.out.print("Meeting Id="+thisMeeting.getId()+" Date="+DateUtilities.formatDate(thisMeeting.getDate()));
+			if (thisMeeting.getClass() == PastMeetingImpl.class) {
+				PastMeetingImpl pastMeeting = (PastMeetingImpl) thisMeeting; 
+				System.out.print(" Notes=" + pastMeeting.getNotes());
+			}
+			System.out.println();
+		}		
+	}
+	
 	public void flush() {
 		ObjectOutputStream encode = null;
 		LatestIDs storedIds = new LatestIDs();
@@ -113,7 +133,19 @@ public class TestHarness {
 		Meeting myMeeting = new MeetingImpl(myCalendar, this.latestMeetingId, contacts);
 		this.latestMeetingId++;
 		
-		System.out.println(myMeeting.getId() + ":" + DateUtilities.formatDate(myMeeting.getDate()) );
+		//System.out.println(myMeeting.getId() + ":" + DateUtilities.formatDate(myMeeting.getDate()) );
+		meetings.add(myMeeting);
+		
+		myMeeting = new PastMeetingImpl(myCalendar, this.latestMeetingId, contacts, "random notes");
+		this.latestMeetingId++;
+		
+		//System.out.println(myMeeting.getId() + ":" + DateUtilities.formatDate(myMeeting.getDate()) );
+		meetings.add(myMeeting);
+		
+		myMeeting = new FutureMeetingImpl(myCalendar, this.latestMeetingId, contacts);
+		this.latestMeetingId++;
+		
+		//System.out.println(myMeeting.getId() + ":" + DateUtilities.formatDate(myMeeting.getDate()) );
 		meetings.add(myMeeting);
 	}
 	

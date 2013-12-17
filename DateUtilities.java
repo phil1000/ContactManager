@@ -17,4 +17,9 @@ public class DateUtilities {
 		return dateFormat.format(date.getTime());
 	}
 	
+	public static boolean dateInPast(Calendar date) {
+		Calendar today = Calendar.getInstance();
+		return ( (today.getTime().compareTo(date.getTime())) > 0 ) ?  true : false;
+	}
+	
 }
