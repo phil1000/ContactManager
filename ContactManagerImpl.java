@@ -3,6 +3,7 @@ import java.util.Calendar;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -71,7 +72,7 @@ public class ContactManagerImpl implements ContactManager {
 		meetingId = this.latestMeetingId;
 		this.latestMeetingId++;
 		
-		meetings.add(newMeeting); // do I want to add here or into a new future meeting set?
+		meetings.add(newMeeting);
 		return meetingId;
 	}
 
@@ -91,7 +92,7 @@ public class ContactManagerImpl implements ContactManager {
 	}
 	
 	@Override
-    public FutureMeeting getFutureMeeting(int id) {
+    public FutureMeeting getFutureMeeting(int id) throws IllegalArgumentException {
 		Meeting thisMeeting = getMeeting(id);
 		if (thisMeeting==null) return null;
 		if (thisMeeting.getClass() == FutureMeetingImpl.class) {
@@ -141,11 +142,43 @@ public class ContactManagerImpl implements ContactManager {
 		Meeting newMeeting = new PastMeetingImpl(date, this.latestMeetingId, contacts, text);
 		this.latestMeetingId++;
 		
-		meetings.add(newMeeting); // do I want to add here or into a new past meeting set?
+		meetings.add(newMeeting); 
 	}
 	
 	@Override
-    public void addMeetingNotes(int id, String text) {
+    public void addMeetingNotes(int id, String text) throws NullPointerException, IllegalArgumentException, IllegalStateException {
+		if (text==null) {
+			throw new NullPointerException("No notes for meeting " + id);
+		}
+		
+		Meeting meetingFound=null;
+		ListIterator<Meeting> iter = meetings.listIterator(); // need a list iterator as I want to replace an item if found
+		while (iter.hasNext()) {
+			Meeting thisMeeting=iter.next();
+			if (id==thisMeeting.getId()) {
+				meetingFound=thisMeeting;
+				break;
+			}
+		}
+		if (meetingFound==null) {
+			throw new IllegalArgumentException("meeting not found :" + id);
+		}
+		
+		if (meetingFound.getClass() != FutureMeetingImpl.class) {
+			throw new IllegalArgumentException(id + " is not a future meeting"); 
+		}
+		
+		FutureMeeting futureMeeting = (FutureMeeting) meetingFound;
+		
+		if ( DateUtilities.dateInFuture(futureMeeting.getDate()) ) {
+			throw new IllegalStateException("meeting date is in the future");
+		}
+		
+		Meeting pastMeeting = new PastMeetingImpl(futureMeeting, text);
+		// now replace what was a future meeting with the newly created past meeting
+		// The iterator was declared outside the while loop so will still be pointing 
+		// at the appropriate index in the array
+		iter.set(pastMeeting);
 	}
 	
 	@Override

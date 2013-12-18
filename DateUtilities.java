@@ -22,4 +22,8 @@ public class DateUtilities {
 		return ( (today.getTime().compareTo(date.getTime())) > 0 ) ?  true : false;
 	}
 	
+	public static boolean dateInFuture(Calendar date) {
+		Calendar today = Calendar.getInstance();
+		return ( (today.getTime().compareTo(date.getTime())) < 0 ) ?  true : false;
+	}
 }
