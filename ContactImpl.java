@@ -27,6 +27,20 @@ public class ContactImpl implements Contact, Serializable {
 		addNotes(notes);
 	}
 	
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof ContactImpl)) return false;
+		//if ( (ContactImpl)o.getId().equals(this.getId()) && (ContactImpl)o.getName().equals(this.getName()) ) return true;
+		ContactImpl that = (ContactImpl) o;
+		if ( that.getId()==this.getId() ) return true;
+		else return false;
+	}	
+	
+	@Override
+	public int hashCode() {
+        return (41 * (41 + getId()) );
+	}
+	
 	private void checkText(String text) throws IllegalArgumentException {	
 		// I use regular expressions to check that the contact name is valid i.e. contacts alpha numeric, space or ., 
 		// if not I print an error and exit program (will just throw in reality)

@@ -139,13 +139,45 @@ public class ContactManagerImpl implements ContactManager {
 	}
 	
 	@Override
-    public Set<Contact> getContacts(int... ids) {
-		return null;
+    public Set<Contact> getContacts(int... ids) throws IllegalArgumentException {
+		Set<Contact> returnedContacts = new HashSet<Contact>();
+		boolean found;
+		Iterator<Contact> myIterator=null;
+		for (int i : ids) {
+			myIterator = contacts.iterator();
+			found=false;
+			while(myIterator.hasNext()) {
+				Contact currentContact = myIterator.next();
+				if (i==currentContact.getId()) {
+					returnedContacts.add(currentContact);
+					found=true;
+					break;
+				}
+			}
+			if (!found) throw new IllegalArgumentException("id not found :" + i);
+		}
+		return returnedContacts;
 	}
 	
 	@Override
-    public Set<Contact> getContacts(String name) {
-		return null;
+    public Set<Contact> getContacts(String name) throws NullPointerException, IllegalArgumentException {
+		// I have added an illegalArgumentException even though not asked for one because it makes
+		// sense to tell the calling program that nothing has been found - the alternative is to 
+		// send a null pointer.
+		if (name==null) throw new NullPointerException("name is null");
+		
+		Set<Contact> returnedContacts = new HashSet<Contact>();
+		boolean found=false;
+		Iterator<Contact> myIterator=contacts.iterator();
+		while(myIterator.hasNext()) {
+			Contact currentContact = myIterator.next();
+			if (name.equals(currentContact.getName())) {
+				returnedContacts.add(currentContact);
+				found=true;
+			}
+		}
+		if (!found) throw new IllegalArgumentException("name not found :" + name);
+		else return returnedContacts;
 	}
 	
 	@Override 

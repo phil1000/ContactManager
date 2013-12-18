@@ -25,10 +25,64 @@ public class TestHarness {
 	
 	public void launch() {
 		openfile();
+
 		createContacts();
 		createMeetings();
+		testcontainsAll();
+		Set<Contact> returnedList=null;
+		try {
+			returnedList = getContacts(1,2,3,4,5,6);
+			Iterator<Contact> myIterator = returnedList.iterator();
+			while(myIterator.hasNext()) {
+				Contact currentContact = myIterator.next();
+				System.out.println("contact id list=" + currentContact.getId() + currentContact.getName() + currentContact.getNotes());
+			}
+		} catch (IllegalArgumentException ex) {
+			System.out.println(ex.getMessage());
+		} 
+		
+		try {
+			returnedList = getContacts("Phil");
+			Iterator<Contact> myIterator = returnedList.iterator();
+			while(myIterator.hasNext()) {
+				Contact currentContact = myIterator.next();
+				System.out.println("contact phil list=" + currentContact.getId() + currentContact.getName() + currentContact.getNotes());
+			}
+		} catch (NullPointerException ex) {
+			System.out.println(ex.getMessage());
+		} catch (IllegalArgumentException ex) {
+			System.out.println(ex.getMessage());
+		}
+		
+		try {
+			returnedList = getContacts("Bobby");
+			Iterator<Contact> myIterator = returnedList.iterator();
+			while(myIterator.hasNext()) {
+				Contact currentContact = myIterator.next();
+				System.out.println("contact phil list=" + currentContact.getId() + currentContact.getName() + currentContact.getNotes());
+			}
+		} catch (NullPointerException ex) {
+			System.out.println(ex.getMessage());
+		}  catch (IllegalArgumentException ex) {
+			System.out.println(ex.getMessage());
+		}
+		
+		try {
+			String myStr = null;
+			returnedList = getContacts(myStr);
+			Iterator<Contact> myIterator = returnedList.iterator();
+			while(myIterator.hasNext()) {
+				Contact currentContact = myIterator.next();
+				System.out.println("contact phil list=" + currentContact.getId() + currentContact.getName() + currentContact.getNotes());
+			}
+		} catch (NullPointerException ex) {
+			System.out.println(ex.getMessage());
+		}  catch (IllegalArgumentException ex) {
+			System.out.println(ex.getMessage());
+		}
+		
 		flush();
-		printMeetings();
+		print();
 		
 		/*Calendar c1 = Calendar.getInstance();
 		c1.set(2000, Calendar.JANUARY, 30);  //January 30th 2000
@@ -37,6 +91,55 @@ public class TestHarness {
 		System.out.println(c1.getTime() + ":" + DateUtilities.dateInPast(c1));
 		c1.set(2013, Calendar.DECEMBER, 16);  //January 30th 2000
 		System.out.println(c1.getTime() + ":" + DateUtilities.dateInPast(c1));*/
+	}
+	
+	public void testcontainsAll() {
+		Set<Contact> newContacts = new HashSet<Contact>();;
+		try {
+			Contact newContact = new ContactImpl("Phil", 1);
+			newContacts.add(newContact);
+			//System.out.println(newContact.getId() + newContact.getName() + newContact.getNotes());
+		} catch (IllegalArgumentException ex) {
+			System.out.println(ex.getMessage());
+		}
+		
+		try {
+			Contact newContact2 = new ContactImpl("Isabelle",2);
+			newContacts.add(newContact2);
+		} catch (IllegalArgumentException ex) {
+			System.out.println(ex.getMessage());
+		}
+		
+		if (!this.contacts.containsAll(newContacts)) System.out.println("one or more not found");
+		else System.out.println("first two found ok");
+		
+		try {
+			Contact newContact2 = new ContactImpl("Isabelle",13);
+			newContacts.add(newContact2);
+		} catch (IllegalArgumentException ex) {
+			System.out.println(ex.getMessage());
+		}
+		
+		if (!this.contacts.containsAll(newContacts)) System.out.println("last one a problem");
+		else System.out.println("first three found ok");
+		
+		Contact newContacttemp=null;
+		try {
+			newContacttemp = new ContactImpl("Aimee",3);
+		} catch (IllegalArgumentException ex) {
+			System.out.println(ex.getMessage());
+		}
+		if (this.contacts.contains(newContacttemp)) System.out.println("Aimee 3 found");
+		else System.out.println("Aimee 3 not found");
+		
+		newContacttemp=null;
+		try {
+			newContacttemp = new ContactImpl("Aimee",17);
+		} catch (IllegalArgumentException ex) {
+			System.out.println(ex.getMessage());
+		}
+		if (this.contacts.contains(newContacttemp)) System.out.println("Aimee 17 found");
+				else System.out.println("Aimee 17 not found");
 	}
 	
 	public void openfile() {
@@ -69,6 +172,46 @@ public class TestHarness {
 				}
 			}	
 		}
+	}
+	
+	public Set<Contact> getContacts(int... ids) throws IllegalArgumentException {
+		Set<Contact> returnedContacts = new HashSet<Contact>();
+		boolean found;
+		Iterator<Contact> myIterator=null;
+		for (int i : ids) {
+			myIterator = contacts.iterator();
+			found=false;
+			while(myIterator.hasNext()) {
+				Contact currentContact = myIterator.next();
+				if (i==currentContact.getId()) {
+					returnedContacts.add(currentContact);
+					found=true;
+					break;
+				}
+			}
+			if (!found) throw new IllegalArgumentException("id not found :" + i);
+		}
+		return returnedContacts;
+	}
+	
+public Set<Contact> getContacts(String name) throws NullPointerException, IllegalArgumentException {
+		// I have added an illegalArgumentException even though not asked for one because it makes
+		// sense to tell the calling program that nothing has been found - the alternative is to 
+		// send a null pointer.
+		if (name==null) throw new NullPointerException("name is null");
+		
+		Set<Contact> returnedContacts = new HashSet<Contact>();
+		boolean found=false;
+		Iterator<Contact> myIterator=contacts.iterator();
+		while(myIterator.hasNext()) {
+			Contact currentContact = myIterator.next();
+			if (name.equals(currentContact.getName())) {
+				returnedContacts.add(currentContact);
+				found=true;
+			}
+		}
+		if (!found) throw new IllegalArgumentException("name not found :" + name);
+		else return returnedContacts;
 	}
 	
 	public void print() {
