@@ -74,21 +74,46 @@ public class ContactManagerImpl implements ContactManager {
 		meetings.add(newMeeting); // do I want to add here or into a new future meeting set?
 		return meetingId;
 	}
-	
+
 	@Override
-    public PastMeeting getPastMeeting(int id) {
-		// first Collections.sort(meetings), then do a Collections.binarySearch(meetings,id);
-		return null;
+    public PastMeeting getPastMeeting(int id) throws IllegalArgumentException {
+		// I have made a design decision that a meeting doesn't automatically become a past meeting
+		// based on the meeting date i.e. a future meeting has to be consciously converted to a past meeting
+		// this is because a meeting might not have occured even though it's past its meeting date.
+		Meeting thisMeeting = getMeeting(id);
+		if (thisMeeting==null) return null;
+		if (thisMeeting.getClass() == PastMeetingImpl.class) {
+			PastMeeting pastMeeting = (PastMeeting) thisMeeting; 
+			return pastMeeting;
+		} else {
+			throw new IllegalArgumentException(id + " is not a past meeting"); 
+		}
 	}
 	
 	@Override
     public FutureMeeting getFutureMeeting(int id) {
-		return null;
+		Meeting thisMeeting = getMeeting(id);
+		if (thisMeeting==null) return null;
+		if (thisMeeting.getClass() == FutureMeetingImpl.class) {
+			FutureMeeting futureMeeting = (FutureMeeting) thisMeeting; 
+			return futureMeeting;
+		} else {
+			throw new IllegalArgumentException(id + " is not a future meeting"); 
+		}
 	}
 	
 	@Override
     public Meeting getMeeting(int id) {
-		return null;
+		Meeting meetingFound=null;
+		Iterator<Meeting> iter = meetings.iterator();
+		while (iter.hasNext()) {
+			Meeting thisMeeting=iter.next();
+			if (id==thisMeeting.getId()) {
+				meetingFound=thisMeeting;
+				break;
+			}
+		}
+		return meetingFound;
 	}
 	
 	@Override

@@ -28,7 +28,17 @@ public class TestHarness {
 
 		createContacts();
 		createMeetings();
-		testcontainsAll();
+		
+		for (int i=0; i<13; i++) {
+			try {
+				//Meeting newMeeting = getMeeting(i);
+				//Meeting newMeeting = getPastMeeting(i);
+				Meeting newMeeting = getFutureMeeting(i);
+			}  catch (IllegalArgumentException ex) {
+				System.out.println(ex.getMessage());
+			}
+		}
+		/*testcontainsAll();
 		Set<Contact> returnedList=null;
 		try {
 			returnedList = getContacts(1,2,3,4,5,6);
@@ -79,10 +89,11 @@ public class TestHarness {
 			System.out.println(ex.getMessage());
 		}  catch (IllegalArgumentException ex) {
 			System.out.println(ex.getMessage());
-		}
+		} */
 		
 		flush();
-		print();
+		//print();
+		printMeetings();
 		
 		/*Calendar c1 = Calendar.getInstance();
 		c1.set(2000, Calendar.JANUARY, 30);  //January 30th 2000
@@ -91,6 +102,46 @@ public class TestHarness {
 		System.out.println(c1.getTime() + ":" + DateUtilities.dateInPast(c1));
 		c1.set(2013, Calendar.DECEMBER, 16);  //January 30th 2000
 		System.out.println(c1.getTime() + ":" + DateUtilities.dateInPast(c1));*/
+	}
+	
+    public PastMeeting getPastMeeting(int id) throws IllegalArgumentException {
+		// I have made a design decision that a meeting doesn't automatically become a past meeting
+		// based on the meeting date i.e. a future meeting has to be consciously converted to a past meeting
+		// this is because a meeting might not have occured even though it's past its meeting date.
+		Meeting thisMeeting = getMeeting(id);
+		if (thisMeeting==null) return null;
+		if (thisMeeting.getClass() == PastMeetingImpl.class) {
+			PastMeeting pastMeeting = (PastMeeting) thisMeeting; 
+			System.out.println(id+" is a past meeting");
+			return pastMeeting;
+		} else {
+			throw new IllegalArgumentException(id + " is not a past meeting"); 
+		}
+	}
+	
+    public FutureMeeting getFutureMeeting(int id) {
+		Meeting thisMeeting = getMeeting(id);
+		if (thisMeeting==null) return null;
+		if (thisMeeting.getClass() == FutureMeetingImpl.class) {
+			FutureMeeting futureMeeting = (FutureMeeting) thisMeeting; 
+			System.out.println(id+" is a future meeting");
+			return futureMeeting;
+		} else {
+			throw new IllegalArgumentException(id + " is not a future meeting"); 
+		}
+	}
+	
+    public Meeting getMeeting(int id) {
+		Meeting meetingFound=null;
+		Iterator<Meeting> iter = meetings.iterator();
+		while (iter.hasNext()) {
+			Meeting thisMeeting=iter.next();
+			if (id==thisMeeting.getId()) {
+				meetingFound=thisMeeting;
+				break;
+			}
+		}
+		return meetingFound;
 	}
 	
 	public void testcontainsAll() {
