@@ -20,6 +20,7 @@ public class ContactManagerImpl implements ContactManager {
 
 	private Set<Contact> contacts;
 	private List<Meeting> meetings;
+	private List<MeetingContactIntersect> meetingContactIntersects;
 	private int latestMeetingId;
 	private int latestCustomerId;
 	private static final String FILENAME = "contacts.txt";
@@ -29,6 +30,7 @@ public class ContactManagerImpl implements ContactManager {
 		if (!new File(FILENAME).exists()) {
             contacts = new HashSet<Contact>();
             meetings = new ArrayList<Meeting>();
+			meetingContactIntersects = new ArrayList<MeetingContactIntersect>();
 			latestMeetingId=1;
 			latestCustomerId=1;
         } else {
@@ -39,6 +41,7 @@ public class ContactManagerImpl implements ContactManager {
                             new FileInputStream(FILENAME)));
                 contacts = (Set<Contact>) d.readObject();
                 meetings = (List<Meeting>) d.readObject();
+				meetingContactIntersects = (List<MeetingContactIntersect>) d.readObject();
 				LatestIDs storedIds = (LatestIDs) d.readObject();
 				this.latestMeetingId=storedIds.latestMeetingId++;
 				this.latestCustomerId=storedIds.latestCustomerId++;
@@ -73,6 +76,7 @@ public class ContactManagerImpl implements ContactManager {
 		this.latestMeetingId++;
 		
 		meetings.add(newMeeting);
+		insertIntersect(date, newMeeting, contacts);
 		return meetingId;
 	}
 
@@ -84,7 +88,10 @@ public class ContactManagerImpl implements ContactManager {
 		Meeting thisMeeting = getMeeting(id);
 		if (thisMeeting==null) return null;
 		if (thisMeeting.getClass() == PastMeetingImpl.class) {
-			PastMeeting pastMeeting = (PastMeeting) thisMeeting; 
+			PastMeeting pastMeeting = (PastMeeting) thisMeeting;
+			if (DateUtilities.dateInFuture(thisMeeting.getDate()) ) {
+				throw new IllegalStateException("Meeting:" + thisMeeting.getId() + " - past meeting has a future date");
+			}
 			return pastMeeting;
 		} else {
 			throw new IllegalArgumentException(id + " is not a past meeting"); 
@@ -96,6 +103,9 @@ public class ContactManagerImpl implements ContactManager {
 		Meeting thisMeeting = getMeeting(id);
 		if (thisMeeting==null) return null;
 		if (thisMeeting.getClass() == FutureMeetingImpl.class) {
+			if (DateUtilities.dateInPast(thisMeeting.getDate()) ) {
+				throw new IllegalArgumentException("Meeting:" + thisMeeting.getId() + " - future meeting has a past date");
+			}
 			FutureMeeting futureMeeting = (FutureMeeting) thisMeeting; 
 			return futureMeeting;
 		} else {
@@ -118,18 +128,78 @@ public class ContactManagerImpl implements ContactManager {
 	}
 	
 	@Override
-    public List<Meeting> getFutureMeetingList(Contact contact) {
-		return null;
+    public List<Meeting> getFutureMeetingList(Contact contact) throws IllegalArgumentException {
+		List<Meeting> futureMeetings = new ArrayList<Meeting>();
+		int count=0;
+		boolean contactFound=false;
+		
+		Iterator<MeetingContactIntersect> iter = meetingContactIntersects.iterator();
+		while (iter.hasNext()) {
+			MeetingContactIntersect thisIntersect=iter.next();
+			if ( contact.getId()==thisIntersect.getContact().getId() ) { 
+				contactFound=true;
+				if (thisIntersect.getMeeting().getClass() == FutureMeetingImpl.class) {
+					futureMeetings.add(thisIntersect.getMeeting());
+					count++;
+				}
+			}
+		}
+		
+		// should order by date here .....
+		if ( count > 0 ) return futureMeetings;
+		if (!contactFound) throw new IllegalArgumentException(contact.getName() + " not found");
+		else return null;
 	}
 	
 	@Override
     public List<Meeting> getFutureMeetingList(Calendar date) {
-		return null;
+		List<Meeting> futureMeetings = new ArrayList<Meeting>();
+		int count=0;
+		
+		date.set(Calendar.SECOND, 0);  // remove seconds/milliseconds
+		date.set(Calendar.MILLISECOND, 0); // or meeting date/time compare fails
+		date.getTime();
+		
+		Iterator<MeetingContactIntersect> iter = meetingContactIntersects.iterator();
+		while (iter.hasNext()) {
+			MeetingContactIntersect thisIntersect=iter.next();
+			thisIntersect.getDate().set(Calendar.SECOND, 0);  // remove seconds and milliseconds from the time
+			thisIntersect.getDate().set(Calendar.MILLISECOND, 0); // or the date compare will fail
+			thisIntersect.getDate().getTime();
+			if ( date.getTime().compareTo(thisIntersect.getDate().getTime()) == 0 ) {
+				if (thisIntersect.getMeeting().getClass() == FutureMeetingImpl.class) {
+					futureMeetings.add(thisIntersect.getMeeting());
+					count++;
+				}
+			}
+		}
+
+		if ( count > 0 ) return futureMeetings;
+		else return null;
 	}
 	
 	@Override
     public List<PastMeeting> getPastMeetingList(Contact contact) {
-		return null;
+		List<PastMeeting> pastMeetings = new ArrayList<PastMeeting>();
+		int count=0;
+		boolean contactFound=false;
+		
+		Iterator<MeetingContactIntersect> iter = meetingContactIntersects.iterator();
+		while (iter.hasNext()) {
+			MeetingContactIntersect thisIntersect=iter.next();
+			if ( contact.getId()==thisIntersect.getContact().getId() ) {
+				contactFound=true;
+				if (thisIntersect.getMeeting().getClass() == PastMeetingImpl.class) {
+					pastMeetings.add( (PastMeeting) thisIntersect.getMeeting());
+					count++;
+				}
+			}
+		}
+		
+		// should order by date here .....
+		if ( count > 0 ) return pastMeetings;
+		if (!contactFound) throw new IllegalArgumentException(contact.getName() + " not found");
+		else return null;
 	}
 	
 	@Override
@@ -142,7 +212,8 @@ public class ContactManagerImpl implements ContactManager {
 		Meeting newMeeting = new PastMeetingImpl(date, this.latestMeetingId, contacts, text);
 		this.latestMeetingId++;
 		
-		meetings.add(newMeeting); 
+		meetings.add(newMeeting);
+		insertIntersect(date, newMeeting, contacts);		
 	}
 	
 	@Override
@@ -179,6 +250,7 @@ public class ContactManagerImpl implements ContactManager {
 		// The iterator was declared outside the while loop so will still be pointing 
 		// at the appropriate index in the array
 		iter.set(pastMeeting);
+		updateIntersect(pastMeeting);
 	}
 	
 	@Override
@@ -238,6 +310,26 @@ public class ContactManagerImpl implements ContactManager {
 		else return returnedContacts;
 	}
 	
+	private void insertIntersect(Calendar date, Meeting meeting, Set<Contact> contacts) {
+			Iterator<Contact> myIterator = contacts.iterator();
+			while(myIterator.hasNext()) {
+				Contact currentContact = myIterator.next();
+				MeetingContactIntersect intersect = new MeetingContactIntersect(meeting, currentContact, date);
+				meetingContactIntersects.add(intersect);
+			}
+	}
+	
+	private void updateIntersect(Meeting meeting) {			
+		ListIterator<MeetingContactIntersect> iter = meetingContactIntersects.listIterator();
+		while (iter.hasNext()) {
+				MeetingContactIntersect thisIntersect=iter.next();
+				if (meeting.getId()==thisIntersect.getMeeting().getId()) {
+					thisIntersect.setMeeting(meeting);
+					iter.set(thisIntersect);
+				}
+		}
+	}
+	
 	@Override 
     public void flush() {
 		ObjectOutputStream encode = null;
@@ -257,6 +349,7 @@ public class ContactManagerImpl implements ContactManager {
         try {
             encode.writeObject(contacts);
             encode.writeObject(meetings);
+			encode.writeObject(meetingContactIntersects);
 			encode.writeObject(storedIds);
         } catch (IOException ex) {
             ex.printStackTrace();

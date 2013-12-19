@@ -28,9 +28,10 @@ public class ContactImpl implements Contact, Serializable {
 	}
 	
 	@Override
+	// I have overriden the equals and hashcode methods to facilitate a quicker search based on the Id field
+	// this is used by the ContainsAll call on the HashSet.
 	public boolean equals(Object o) {
 		if (!(o instanceof ContactImpl)) return false;
-		//if ( (ContactImpl)o.getId().equals(this.getId()) && (ContactImpl)o.getName().equals(this.getName()) ) return true;
 		ContactImpl that = (ContactImpl) o;
 		if ( that.getId()==this.getId() ) return true;
 		else return false;
@@ -38,6 +39,8 @@ public class ContactImpl implements Contact, Serializable {
 	
 	@Override
 	public int hashCode() {
+		// if the hashcode is based just on the id then there will be a high duplicate hit rate
+		// therefore make it a bigger number and use a prime as well to reduce the hit rate
         return (41 * (41 + getId()) );
 	}
 	
