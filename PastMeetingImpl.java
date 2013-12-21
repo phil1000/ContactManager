@@ -15,7 +15,7 @@ public class PastMeetingImpl extends MeetingImpl implements PastMeeting {
 		addNotes(notes);
 	}
 	
-	public PastMeetingImpl(FutureMeeting heldMeeting, String notes){
+	public PastMeetingImpl(FutureMeeting heldMeeting, String notes){ // this constructor is used when a future meeting becomes a past meeting
 		super(heldMeeting.getDate(), heldMeeting.getId(), heldMeeting.getContacts());
 		this.notes = notes;
     }

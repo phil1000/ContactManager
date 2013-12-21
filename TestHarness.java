@@ -34,7 +34,7 @@ public class TestHarness {
 		//printFutureMeetingsbyContact(); // tests getFutureMeetingList(Contact contact);
 		//printFutureMeetingbyDate(); // tests getFutureMeetingList(Calendar date);
 		//getFutureMeetingonId();
-		addMeetingNotes(); // tests addMeetingNotes(id, text)
+		//addMeetingNotes(); // tests addMeetingNotes(id, text)
 		//testWithBadContact(); // tests multiple methods to see if they correctly process a contact that is not found
 		mgr.flush(); // tests the writing of results to file
 	}
@@ -488,6 +488,18 @@ public class TestHarness {
 		}		
 	}
 	
+	public void printJustMeetings(List<Meeting> meetings) {
+		Iterator<Meeting> iter = meetings.iterator();
+		while (iter.hasNext()) {
+			Meeting thisMeeting = iter.next();
+			System.out.print("Meeting Id="+thisMeeting.getId()+" Date="+DateUtilities.formatDate(thisMeeting.getDate()));
+			if (thisMeeting.getClass() == PastMeetingImpl.class) {
+				PastMeetingImpl pastMeeting = (PastMeetingImpl) thisMeeting; 
+				System.out.print(" Notes=" + pastMeeting.getNotes());
+			}
+			System.out.println();
+		}		
+	}
 	public static void main(String[] args) {
 		TestHarness script = new TestHarness();
 		script.launch();

@@ -13,7 +13,7 @@ public class ContactImpl implements Contact, Serializable {
 	public ContactImpl(String name, int id) throws IllegalArgumentException {
 		
 		try {
-			checkText(name);
+			checkText(name); // check that the text is alphanumeric, though a few common special characters are supported
 		} catch ( IllegalArgumentException ex ) {
 			throw new IllegalArgumentException(ex.getMessage());
 		}
@@ -44,6 +44,13 @@ public class ContactImpl implements Contact, Serializable {
         return (41 * (41 + getId()) );
 	}
 	
+	/**
+     * Parse the provided text and return an exception if it contacts any unsupported characters
+     *
+     * @param text     the contact name in this instance but any text string.
+     * @throws IllegalArgumentException if text is not alpha numeric or contains
+     *                                  non supported special characters
+     */
 	private void checkText(String text) throws IllegalArgumentException {	
 		// I use regular expressions to check that the contact name is valid i.e. contacts alpha numeric, space or ., 
 		// if not I print an error and exit program (will just throw in reality)
