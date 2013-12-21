@@ -24,18 +24,18 @@ public class TestHarness {
 	public void launch() {
 		mgr = new ContactManagerImpl(); // tests retrieval of prior results from file and general initialisation
 		addContacts(); // tests addNewContact()
-		printContactsbyName(); // tests getContacts(String name)
-		printContactsbyId(); // tests getContacts(int... ids)
+		//printContactsbyName(); // tests getContacts(String name)
+		//printContactsbyId(); // tests getContacts(int... ids)
 		populateContactListABC();
 		addPastMeetings(); // tests addNewPastMeeting(contacts, date, text)
-		printPastMeetingsbyId(); // tests getPastMeeting(int id)
+		//printPastMeetingsbyId(); // tests getPastMeeting(int id)
 		printPastMeetingbyContact(); // tests getPastMeetingList(Contact contact);
 		addFutureMeetings(); // tests addFutureMeeting(contact, date)
 		printFutureMeetingsbyContact(); // tests getFutureMeetingList(Contact contact);
 		printFutureMeetingbyDate(); // tests getFutureMeetingList(Calendar date);
-		getFutureMeetingonId();
-		addMeetingNotes(); // tests addMeetingNotes(id, text)
-		testWithBadContact(); // tests multiple methods to see if they correctly process a contact that is not found
+		//getFutureMeetingonId();
+		//addMeetingNotes(); // tests addMeetingNotes(id, text)
+		//testWithBadContact(); // tests multiple methods to see if they correctly process a contact that is not found
 		mgr.flush(); // tests the writing of results to file
 	}
 	public void addMeetingNotes() {
@@ -408,7 +408,8 @@ public class TestHarness {
 				System.out.println(ex.getMessage());
 			}
 		}
-		printMeetings(meetings);
+		System.out.println("printing past meetings");
+		printJustMeetings(meetings);
 	}
 	
 	public void printFutureMeetingsbyContact() {
@@ -423,7 +424,8 @@ public class TestHarness {
 		List<Meeting> meetings = new ArrayList<Meeting>();
 		System.out.println("*******" + currentContact.getName() + ":" + currentContact.getId());
 		meetings = mgr.getFutureMeetingList(currentContact);
-		if (meetings!=null) printMeetings(meetings);
+		System.out.println("printing future meetings");
+		if (meetings!=null) printJustMeetings(meetings);
 		else System.out.println("No meetings for " + currentContact.getName());
 	}
 	
@@ -493,10 +495,10 @@ public class TestHarness {
 		while (iter.hasNext()) {
 			Meeting thisMeeting = iter.next();
 			System.out.print("Meeting Id="+thisMeeting.getId()+" Date="+DateUtilities.formatDate(thisMeeting.getDate()));
-			if (thisMeeting.getClass() == PastMeetingImpl.class) {
+			/*if (thisMeeting.getClass() == PastMeetingImpl.class) {
 				PastMeetingImpl pastMeeting = (PastMeetingImpl) thisMeeting; 
 				System.out.print(" Notes=" + pastMeeting.getNotes());
-			}
+			}*/
 			System.out.println();
 		}		
 	}

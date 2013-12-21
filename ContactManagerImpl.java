@@ -156,7 +156,10 @@ public class ContactManagerImpl implements ContactManager {
 			}
 		}
 		
-		if ( count > 0 ) return futureMeetings;
+		if ( count > 0 ) {
+			Collections.sort(futureMeetings, new SortbyDate());
+			return futureMeetings;
+		}
 		else return null; 
 	}
 	
@@ -202,6 +205,13 @@ public class ContactManagerImpl implements ContactManager {
 		}
 	}
 	
+	class SortbyDate implements Comparator<Meeting> {
+		@Override
+		public int compare(Meeting a, Meeting b) {
+			return (DateUtilities.compareDates(a.getDate(), b.getDate()));
+		}
+	}
+	
 	@Override
     public List<PastMeeting> getPastMeetingList(Contact contact) {
 		List<PastMeeting> pastMeetings = new ArrayList<PastMeeting>();
@@ -222,7 +232,10 @@ public class ContactManagerImpl implements ContactManager {
 			}
 		}
 		
-		if ( count > 0 ) return pastMeetings;
+		if ( count > 0 ) {
+			Collections.sort(pastMeetings, new SortbyDate());
+			return pastMeetings;
+		}
 		else return null;
 	}
 	

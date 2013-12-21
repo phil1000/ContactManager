@@ -59,4 +59,12 @@ public class DateUtilities {
 		
 		return true;
 	}
+	
+	public static int compareDates(Calendar d1, Calendar d2) {
+		if (d1.get(Calendar.YEAR) > d2.get(Calendar.YEAR)) return 1;
+		if (d1.get(Calendar.YEAR) < d2.get(Calendar.YEAR)) return -1;
+		if (d1.get(Calendar.DAY_OF_YEAR) > d2.get(Calendar.DAY_OF_YEAR)) return 1;
+		if (d1.get(Calendar.DAY_OF_YEAR) < d2.get(Calendar.DAY_OF_YEAR)) return -1;
+		return 0;
+	}
 }
