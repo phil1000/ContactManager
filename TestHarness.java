@@ -24,18 +24,18 @@ public class TestHarness {
 	public void launch() {
 		mgr = new ContactManagerImpl(); // tests retrieval of prior results from file and general initialisation
 		addContacts(); // tests addNewContact()
-		//printContactsbyName(); // tests getContacts(String name)
-		//printContactsbyId(); // tests getContacts(int... ids)
+		printContactsbyName(); // tests getContacts(String name)
+		printContactsbyId(); // tests getContacts(int... ids)
 		populateContactListABC();
 		addPastMeetings(); // tests addNewPastMeeting(contacts, date, text)
-		//printPastMeetingsbyId(); // tests getPastMeeting(int id)
-		//printPastMeetingbyContact(); // tests getPastMeetingList(Contact contact);
+		printPastMeetingsbyId(); // tests getPastMeeting(int id)
+		printPastMeetingbyContact(); // tests getPastMeetingList(Contact contact);
 		addFutureMeetings(); // tests addFutureMeeting(contact, date)
-		//printFutureMeetingsbyContact(); // tests getFutureMeetingList(Contact contact);
-		//printFutureMeetingbyDate(); // tests getFutureMeetingList(Calendar date);
-		//getFutureMeetingonId();
-		//addMeetingNotes(); // tests addMeetingNotes(id, text)
-		//testWithBadContact(); // tests multiple methods to see if they correctly process a contact that is not found
+		printFutureMeetingsbyContact(); // tests getFutureMeetingList(Contact contact);
+		printFutureMeetingbyDate(); // tests getFutureMeetingList(Calendar date);
+		getFutureMeetingonId();
+		addMeetingNotes(); // tests addMeetingNotes(id, text)
+		testWithBadContact(); // tests multiple methods to see if they correctly process a contact that is not found
 		mgr.flush(); // tests the writing of results to file
 	}
 	public void addMeetingNotes() {
@@ -435,7 +435,7 @@ public class TestHarness {
 		List<Meeting> meetings = new ArrayList<Meeting>();
 		System.out.println("*******" + c1.getTime());
 		meetings = mgr.getFutureMeetingList(c1);
-		if (meetings!=null) printMeetings(meetings);
+		if (meetings!=null) printJustMeetings(meetings);
 		else System.out.println("No meetings for " + c1.getTime());
 		
 	}

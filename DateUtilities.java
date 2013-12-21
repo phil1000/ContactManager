@@ -37,7 +37,12 @@ public class DateUtilities {
      */
 	public static boolean dateInPast(Calendar date) {
 		Calendar today = Calendar.getInstance();
-		return ( (today.getTime().compareTo(date.getTime())) > 0 ) ?  true : false;
+		
+		if (date.get(Calendar.YEAR) < today.get(Calendar.YEAR)) return true;
+		if (date.get(Calendar.YEAR) > today.get(Calendar.YEAR)) return false;
+		if (date.get(Calendar.DAY_OF_YEAR) >= today.get(Calendar.DAY_OF_YEAR)) return false;
+		
+		return true;
 	}
 	
 	/**
@@ -47,6 +52,11 @@ public class DateUtilities {
      */
 	public static boolean dateInFuture(Calendar date) {
 		Calendar today = Calendar.getInstance();
-		return ( (today.getTime().compareTo(date.getTime())) < 0 ) ?  true : false;
+
+		if (date.get(Calendar.YEAR) > today.get(Calendar.YEAR)) return true;
+		if (date.get(Calendar.YEAR) < today.get(Calendar.YEAR)) return false;
+		if (date.get(Calendar.DAY_OF_YEAR) <= today.get(Calendar.DAY_OF_YEAR)) return false;
+		
+		return true;
 	}
 }

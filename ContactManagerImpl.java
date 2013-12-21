@@ -2,6 +2,8 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Comparator;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.io.BufferedInputStream;
@@ -161,29 +163,43 @@ public class ContactManagerImpl implements ContactManager {
 	@Override
     public List<Meeting> getFutureMeetingList(Calendar date) {
 		List<Meeting> futureMeetings = new ArrayList<Meeting>();
+		// the MeetingContactIntersect list contains one entry for each contact that attends a meeting 
+		// and so a meeting with 4 contacts will have 4 entries. I only want to return one entry for
+		// each meeting and so create a set to discard duplicate entries
+		Set<Meeting> uniqueMeetings = new HashSet<Meeting>();
 		int count=0;
-		
-		// remove seconds/milliseconds or meeting date/time compare fails
-		date.set(Calendar.SECOND, 0);
-		date.set(Calendar.MILLISECOND, 0);
-		date.getTime();
 		
 		Iterator<MeetingContactIntersect> iter = meetingContactIntersects.iterator();
 		while (iter.hasNext()) {
 			MeetingContactIntersect thisIntersect=iter.next();
-			thisIntersect.getDate().set(Calendar.SECOND, 0);  // remove seconds and milliseconds from the time
-			thisIntersect.getDate().set(Calendar.MILLISECOND, 0); // or the date compare will fail
-			thisIntersect.getDate().getTime();
-			if ( date.getTime().compareTo(thisIntersect.getDate().getTime()) == 0 ) {
+			if ( (date.get(Calendar.YEAR) == thisIntersect.getDate().get(Calendar.YEAR)) &&
+				 (date.get(Calendar.DAY_OF_YEAR) == thisIntersect.getDate().get(Calendar.DAY_OF_YEAR)) ) {
 				if (thisIntersect.getMeeting().getClass() == FutureMeetingImpl.class) {
-					futureMeetings.add(thisIntersect.getMeeting());
+					uniqueMeetings.add(thisIntersect.getMeeting()); // will only add first meeting found, will discard subsequent meetings
 					count++;
 				}
 			}
 		}
 
-		if ( count > 0 ) return futureMeetings;
+		if ( count > 0 ) {
+			Iterator<Meeting> tempIter = uniqueMeetings.iterator();
+			while (tempIter.hasNext()) { // now transfer unique meetings from the set to the arraylist to be returned
+				Meeting newMeeting = tempIter.next();
+				futureMeetings.add(newMeeting);
+			}
+			Collections.sort(futureMeetings, new SortbyId());
+			return futureMeetings;
+		}
 		else return null;  
+	}
+	
+	class SortbyId implements Comparator<Meeting> {
+		@Override
+		public int compare(Meeting a, Meeting b) {
+			if ( a.getId() > b.getId() ) return 1;
+			if ( a.getId() < b.getId() ) return -1;
+			else return 0;
+		}
 	}
 	
 	@Override
